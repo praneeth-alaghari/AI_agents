@@ -1,4 +1,3 @@
-
 import yfinance as yf
 
 # Fetch Reliance stock data (NSE: RELIANCE.NS)
@@ -8,4 +7,5 @@ data = ticker.history(period="1d")
 
 # Print current price
 current_price = data['Close'].iloc[-1]
+print(f"Reliance current stock price: {current_price}")
 print(f"Reliance currensdt stock price: {current_price}")

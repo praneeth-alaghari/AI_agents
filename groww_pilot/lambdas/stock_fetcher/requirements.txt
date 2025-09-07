@@ -1,1 +1,5 @@
 # requirements for stock_fetcher
+
+yfinance
+pandas
+google-generativeai

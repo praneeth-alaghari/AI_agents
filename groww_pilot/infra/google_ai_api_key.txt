@@ -1,2 +1,2 @@
-AIzaSyAwvtQjvqwxERfKgh7wCgNFtD6s4qBe-7I
+
 # Google AI Studio API key. DO NOT COMMIT THIS FILE TO PUBLIC REPOS.

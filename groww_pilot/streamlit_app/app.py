@@ -92,13 +92,13 @@ with tab1:
 
             stock_news = fetch_stock_marketaux_news(selected_stock)
 
-                if stock_news:
-                    df_stock_news = pd.DataFrame(stock_news)
-                    st.write("#### News Table")
-                    st.markdown("Click headlines to open links.")
-                    st.write(df_stock_news.to_markdown(index=False), unsafe_allow_html=True)
-                else:
-                    st.info(f"No Marketaux news found for {selected_stock} or API error.")
+            if stock_news:
+                df_stock_news = pd.DataFrame(stock_news)
+                st.write("#### News Table")
+                st.markdown("Click headlines to open links.")
+                st.write(df_stock_news.to_markdown(index=False), unsafe_allow_html=True)
+            else:
+                st.info(f"No Marketaux news found for {selected_stock} or API error.")
 
             # --- Streamlit Native Chatbot ---
             st.write("---")

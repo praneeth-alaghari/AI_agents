@@ -1,1 +1,4 @@
 .env
+openai_secrets.py
+google_secrets.py
+*.pyc

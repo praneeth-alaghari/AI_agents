@@ -1,10 +1,9 @@
 import openai
 from infra.openai_secrets import OPENAI_API_KEY
 
-
-def get_openai_response(prompt):
     # Replace with your OpenAI API key
-    openai.api_key = OPENAI_API_KEY
+    # Replace with your OpenAI API key
+
 
     try:
         response = openai.ChatCompletion.create(

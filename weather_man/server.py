@@ -1,72 +1,99 @@
-import requests
-import json
+from langchain_openai import ChatOpenAI
+from langgraph.prebuilt import create_react_agent
+from langchain_core.messages import SystemMessage
+from dotenv import load_dotenv
+from tools.call_weather import get_weather
+from tools.call_weather_forecast import get_forecast_open_meteo
 import os
-from openai import OpenAI
 
-# Replace with your OpenAI API key
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+load_dotenv()
 
-MCP_WEATHER_URL = "https://abcd1234xyz.execute-api.ap-south-1.amazonaws.com/weather"
+llm = ChatOpenAI(
+    model="gpt-4o-mini",
+    temperature=0,
+    openai_api_key=os.getenv("OPENAI_API_KEY")
+)
 
-# Memory to remember past queries
-memory = []
+tools = [get_weather, get_forecast_open_meteo]
+agent_executor = create_react_agent(llm, tools)
 
-def call_weather_mcp(city: str) -> str:
-    """Call the MCP server dynamically"""
-    try:
-        resp = requests.get(MCP_WEATHER_URL, params={"city": city})
-        if resp.status_code == 200:
-            return resp.json()["weather"]
-        else:
-            return "I couldn't fetch the weather."
-    except Exception:
-        return "Error contacting the weather service."
+# System prompt to guide agent behavior
+SYSTEM_PROMPT = """You are a helpful weather assistant with access to specific weather tools.
 
-def agent_respond(user_input: str) -> str:
-    """Main agent loop: use LLM to parse intent and call MCP dynamically"""
-    
-    # Build the prompt for LLM
-    messages = [
-        {"role": "system", "content": 
-         "You are an AI agent. When the user asks about the weather, "
-         "return a JSON object with keys 'tool':'weather' and 'city':'city_name'. "
-         "Otherwise, respond normally."},
-        {"role": "user", "content": user_input}
-    ]
-    
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages,
-        temperature=0
-    )
-    
-    output_text = response.choices[0].message.content.strip()
-    
-    # Try to parse JSON
-    try:
-        data = json.loads(output_text)
-        if data.get("tool") == "weather" and "city" in data:
-            city = data["city"]
-            weather = call_weather_mcp(city)
-            reply = f"The weather in {city} is {weather}."
-        else:
-            reply = output_text
-    except Exception:
-        # If LLM didn't return JSON, just reply normally
-        reply = output_text
-    
-    # Save memory
-    memory.append({"user_input": user_input, "ai_response": reply})
-    return reply
+⚠️ IMPORTANT RULES:
+1. ONLY use your tools when the user asks about WEATHER-related information (temperature, conditions, rain, forecast, etc.)
+2. For non-weather queries, politely answer using your general knowledge and explain what you cannot help with
+3. Don't force-fit weather tools to unrelated questions
 
-# ------------------------
-# Run the Agent
-# ------------------------
+DO Not let user know that you are confined to weather tools only.
+"""
+
 if __name__ == "__main__":
-    print("AI Agent (type 'exit' to quit)")
+    print("🌤️  Weather Agent with Live Reasoning\n")
+    print("Watch the agent think and use tools in real-time!\n")
+    print("Type 'exit' to quit\n")
+    
     while True:
-        user_input = input("You: ")
-        if user_input.lower() == "exit":
+        user_input = input("You: ").strip()
+        
+        if user_input.lower() in ["exit", "quit"]:
+            print("\nGoodbye! 👋")
             break
-        reply = agent_respond(user_input)
-        print("AI:", reply)
+        
+        if not user_input:
+            continue
+        
+        print("\n" + "="*60)
+        print("🧠 AGENT THINKING PROCESS (LIVE)")
+        print("="*60 + "\n")
+        
+        try:
+            final_response = None
+            
+            # Stream the agent's execution in real-time with system prompt
+            for chunk in agent_executor.stream(
+                {
+                    "messages": [
+                        SystemMessage(content=SYSTEM_PROMPT),
+                        ("human", user_input)
+                    ]
+                },
+                stream_mode="updates"
+            ):
+                for node_name, updates in chunk.items():
+                    if "messages" in updates:
+                        for msg in updates["messages"]:
+                            
+                            # 1. Show when agent decides to call a tool
+                            if hasattr(msg, 'tool_calls') and msg.tool_calls:
+                                for tool_call in msg.tool_calls:
+                                    print(f"🔧 Agent Decision: Call tool '{tool_call['name']}'")
+                                    print(f"   📥 Input: {tool_call['args']}")
+                                    print()
+                            
+                            # 2. Show tool execution results
+                            elif hasattr(msg, 'name') and msg.name:
+                                print(f"✅ Tool '{msg.name}' executed successfully")
+                                # Show truncated result
+                                result_preview = msg.content[:150].replace('\n', ' ')
+                                if len(msg.content) > 150:
+                                    result_preview += "..."
+                                print(f"   📤 Output: {result_preview}")
+                                print()
+                            
+                            # 3. Show final AI response
+                            elif hasattr(msg, 'type') and msg.type == 'ai' and msg.content:
+                                final_response = msg.content
+            
+            # Display final answer
+            print("="*60)
+            print("💬 FINAL RESPONSE")
+            print("="*60 + "\n")
+            
+            if final_response:
+                print(f"Agent: {final_response}\n")
+            else:
+                print("Agent: (No response generated)\n")
+                
+        except Exception as e:
+            print(f"\n❌ Error: {e}\n")

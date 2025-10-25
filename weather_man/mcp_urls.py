@@ -1,0 +1,1 @@
+MCP_WEATHER_URL = "https://eho227s5gc.execute-api.ap-south-1.amazonaws.com/default/mcpWeatherServer"

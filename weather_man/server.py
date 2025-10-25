@@ -1,12 +1,15 @@
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from dotenv import load_dotenv
 from tools.call_weather import get_weather
 from tools.call_weather_forecast import get_forecast_open_meteo
 import os
+from collections import deque
+
 
 load_dotenv()
+
 
 llm = ChatOpenAI(
     model="gpt-4o-mini",
@@ -14,24 +17,79 @@ llm = ChatOpenAI(
     openai_api_key=os.getenv("OPENAI_API_KEY")
 )
 
+
 tools = [get_weather, get_forecast_open_meteo]
 agent_executor = create_react_agent(llm, tools)
 
+
 # System prompt to guide agent behavior
-SYSTEM_PROMPT = """You are a helpful weather assistant with access to specific weather tools.
+# System prompt to guide agent behavior
+SYSTEM_PROMPT = """You are a helpful weather assistant.
 
-⚠️ IMPORTANT RULES:
-1. ONLY use your tools when the user asks about WEATHER-related information (temperature, conditions, rain, forecast, etc.)
-2. For non-weather queries, politely answer using your general knowledge and explain what you cannot help with
-3. Don't force-fit weather tools to unrelated questions
+Use your weather tools to fetch current weather data and forecasts when needed.
 
-DO Not let user know that you are confined to weather tools only.
-"""
+For everything else, use your general knowledge to help the user - especially when they ask follow-up questions about weather information you've already shared.
+
+Be conversational and helpful. Use the conversation history to understand context."""
+
+
+class ConversationHistory:
+    """Manages conversation history with a maximum size limit"""
+    
+    def __init__(self, max_conversations=5):
+        """
+        Args:
+            max_conversations: Maximum number of conversation pairs to keep
+        """
+        self.max_conversations = max_conversations
+        # Using deque for efficient FIFO operations
+        self.history = deque(maxlen=max_conversations * 2)  # *2 for user+AI messages
+    
+    def add_message(self, role, content):
+        """Add a message to history
+        
+        Args:
+            role: 'human' or 'ai'
+            content: The message content
+        """
+        if role == 'human':
+            self.history.append(HumanMessage(content=content))
+        elif role == 'ai':
+            self.history.append(AIMessage(content=content))
+    
+    def get_messages(self):
+        """Get all messages in history"""
+        return list(self.history)
+    
+    def clear(self):
+        """Clear all history"""
+        self.history.clear()
+    
+    def get_summary(self):
+        """Get a human-readable summary of conversation history"""
+        if not self.history:
+            return "No conversation history"
+        
+        summary = []
+        for i, msg in enumerate(self.history):
+            if isinstance(msg, HumanMessage):
+                summary.append(f"User: {msg.content}")
+            elif isinstance(msg, AIMessage):
+                summary.append(f"Agent: {msg.content[:100]}...")
+        return "\n".join(summary)
+
 
 if __name__ == "__main__":
-    print("🌤️  Weather Agent with Live Reasoning\n")
-    print("Watch the agent think and use tools in real-time!\n")
-    print("Type 'exit' to quit\n")
+    print("🌤️  Weather Agent with Live Reasoning & Memory\n")
+    print("Watch the agent think and use tools in real-time!")
+    print("The agent remembers your last 5 conversations.\n")
+    print("Commands:")
+    print("  - 'exit' or 'quit': Exit the program")
+    print("  - 'history': View conversation history")
+    print("  - 'clear': Clear conversation history\n")
+    
+    # Initialize conversation history
+    conversation_memory = ConversationHistory(max_conversations=5)
     
     while True:
         user_input = input("You: ").strip()
@@ -39,6 +97,18 @@ if __name__ == "__main__":
         if user_input.lower() in ["exit", "quit"]:
             print("\nGoodbye! 👋")
             break
+        
+        if user_input.lower() == "history":
+            print("\n📚 CONVERSATION HISTORY")
+            print("="*60)
+            print(conversation_memory.get_summary())
+            print("="*60 + "\n")
+            continue
+        
+        if user_input.lower() == "clear":
+            conversation_memory.clear()
+            print("\n🗑️  Conversation history cleared!\n")
+            continue
         
         if not user_input:
             continue
@@ -50,14 +120,14 @@ if __name__ == "__main__":
         try:
             final_response = None
             
-            # Stream the agent's execution in real-time with system prompt
+            # Build message list with system prompt + history + current message
+            messages = [SystemMessage(content=SYSTEM_PROMPT)]
+            messages.extend(conversation_memory.get_messages())
+            messages.append(HumanMessage(content=user_input))
+            
+            # Stream the agent's execution in real-time with system prompt and history
             for chunk in agent_executor.stream(
-                {
-                    "messages": [
-                        SystemMessage(content=SYSTEM_PROMPT),
-                        ("human", user_input)
-                    ]
-                },
+                {"messages": messages},
                 stream_mode="updates"
             ):
                 for node_name, updates in chunk.items():
@@ -92,6 +162,10 @@ if __name__ == "__main__":
             
             if final_response:
                 print(f"Agent: {final_response}\n")
+                
+                # Add both user input and AI response to history
+                conversation_memory.add_message('human', user_input)
+                conversation_memory.add_message('ai', final_response)
             else:
                 print("Agent: (No response generated)\n")
                 

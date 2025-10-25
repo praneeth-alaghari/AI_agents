@@ -5,3 +5,5 @@ langchain_openai
 langchain_core
 langgraph.prebuilt
 python-dotenv
+langchain_community
+faiss-cpu

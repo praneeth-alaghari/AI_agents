@@ -4,8 +4,11 @@ from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from dotenv import load_dotenv
 from tools.call_weather import get_weather
 from tools.call_weather_forecast import get_forecast_open_meteo
+from tools.call_personal_weather_prefs import search_weather_knowledge
 import os
 from collections import deque
+from langchain_core.tools import tool
+
 
 
 load_dotenv()
@@ -18,11 +21,10 @@ llm = ChatOpenAI(
 )
 
 
-tools = [get_weather, get_forecast_open_meteo]
+tools = [get_weather, get_forecast_open_meteo, search_weather_knowledge]
 agent_executor = create_react_agent(llm, tools)
 
 
-# System prompt to guide agent behavior
 # System prompt to guide agent behavior
 SYSTEM_PROMPT = """You are a helpful weather assistant.
 
@@ -30,7 +32,10 @@ Use your weather tools to fetch current weather data and forecasts when needed.
 
 For everything else, use your general knowledge to help the user - especially when they ask follow-up questions about weather information you've already shared.
 
-Be conversational and helpful. Use the conversation history to understand context."""
+Be conversational and helpful. Use the conversation history to understand context.
+
+1. Once weather data is fetched, always check user's personal weather preferences via search_weather_knowledge tool.
+2. Based on the fetched weather data and the user's preferences, provide personalized advice on clothing, activities, health tips, and food recommendations."""
 
 
 class ConversationHistory:
@@ -112,10 +117,6 @@ if __name__ == "__main__":
         
         if not user_input:
             continue
-        
-        print("\n" + "="*60)
-        print("🧠 AGENT THINKING PROCESS (LIVE)")
-        print("="*60 + "\n")
         
         try:
             final_response = None

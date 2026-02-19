@@ -1,0 +1,15 @@
+# Data Chat Bot - All Dependencies
+# ==================================
+
+# UI
+streamlit==1.41.0
+
+# Database
+sqlalchemy==2.0.25
+psycopg2-binary==2.9.9
+
+# AI
+openai==1.12.0
+
+# Utilities
+pandas>=2.0.0

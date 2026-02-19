@@ -2,4 +2,9 @@
 __pycache__/
 *.pyc
 .venv/
+venv/
 node_modules/
+secrets/
+**/secrets.toml
+**/*.key
+**/*.pem

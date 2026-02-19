@@ -1,0 +1,13 @@
+# Secrets (NEVER commit these)
+.streamlit/secrets.toml
+backend/.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# IDE
+.vscode/
+.idea/

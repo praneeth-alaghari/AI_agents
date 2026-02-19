@@ -1,0 +1,5 @@
+# Data Chat Bot - Frontend Dependencies
+# =======================================
+
+streamlit==1.41.0
+requests==2.31.0

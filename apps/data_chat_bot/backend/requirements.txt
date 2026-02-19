@@ -10,7 +10,7 @@ sqlalchemy
 psycopg[binary]
 
 # AI
-openai==1.12.0
+openai
 
 # CORS
 python-multipart==0.0.6

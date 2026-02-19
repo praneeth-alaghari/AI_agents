@@ -6,7 +6,7 @@ streamlit==1.41.0
 
 # Database
 sqlalchemy==2.0.25
-psycopg[binary]==3.1.18
+psycopg[binary]
 
 # AI
 openai==1.12.0

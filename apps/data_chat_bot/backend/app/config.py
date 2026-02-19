@@ -32,7 +32,7 @@ class Settings:
         import urllib.parse
         encoded_password = urllib.parse.quote_plus(self.DB_PASSWORD)
         name = db_name or self.DB_NAME
-        return f"postgresql://{self.DB_USER}:{encoded_password}@{self.DB_HOST}:{self.DB_PORT}/{name}"
+        return f"postgresql+psycopg://{self.DB_USER}:{encoded_password}@{self.DB_HOST}:{self.DB_PORT}/{name}"
 
 
 settings = Settings()

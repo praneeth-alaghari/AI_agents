@@ -1,0 +1,19 @@
+2026-02-21 20:31:15,432 - my-simple-server - INFO - Server starting...
+2026-02-21 20:31:15,971 - my-simple-server - INFO - Running server on stdio
+2026-02-21 20:32:42,877 - my-simple-server - INFO - Server starting...
+2026-02-21 20:32:43,425 - my-simple-server - INFO - Running server on stdio
+2026-02-21 20:32:43,443 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-02-21 20:32:50,529 - my-simple-server - INFO - Server starting...
+2026-02-21 20:32:51,086 - my-simple-server - INFO - Running server on stdio
+2026-02-21 20:32:51,098 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-02-21 20:33:27,912 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2026-02-21 20:33:27,912 - my-simple-server - INFO - Adding 4 and 5
+2026-02-21 20:34:38,443 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2026-02-21 20:34:57,330 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2026-02-21 20:34:57,330 - my-simple-server - INFO - Adding 4 and 5
+2026-02-21 20:35:54,624 - my-simple-server - INFO - Server starting...
+2026-02-21 20:35:55,181 - my-simple-server - INFO - Running server on stdio
+2026-02-21 20:35:55,192 - mcp.server.lowlevel.server - INFO - Processing request of type ListToolsRequest
+2026-02-21 20:36:13,820 - mcp.server.lowlevel.server - INFO - Processing request of type ListResourcesRequest
+2026-02-21 20:36:22,698 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest
+2026-02-21 20:36:22,698 - my-simple-server - INFO - Adding 5 and 7

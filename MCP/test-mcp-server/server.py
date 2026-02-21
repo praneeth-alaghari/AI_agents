@@ -15,10 +15,12 @@ from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
 # host=0.0.0.0 required in Docker containers so Render's load balancer can reach the app
+# stateless_http=True required for cloud deployments that don't maintain session state between requests
 mcp = FastMCP(
     "My Simple Server",
     host="0.0.0.0",
-    port=int(os.getenv("PORT", 8000))
+    port=int(os.getenv("PORT", 8000)),
+    stateless_http=True
 )
 
 @mcp.tool()

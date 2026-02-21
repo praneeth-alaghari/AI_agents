@@ -4,5 +4,4 @@ __pycache__/
 *.log
 .git/
 .env
-requirements.txt
 # Keep requirements.txt in Dockerfile but ignore other local noise

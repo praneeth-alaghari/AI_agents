@@ -34,7 +34,7 @@ if __name__ == "__main__":
     if os.getenv("RENDER") or os.getenv("PORT"):
         port = int(os.getenv("PORT", 8000))
         logger.info(f"Running server on SSE transport at port {port}")
-        mcp.run(transport="sse", host="0.0.0.0", port=port)
+        mcp.run(transport="sse", port=port)
     else:
         logger.info("Running server on stdio")
         mcp.run(transport="stdio")
